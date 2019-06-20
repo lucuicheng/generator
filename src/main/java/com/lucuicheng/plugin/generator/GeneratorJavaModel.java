@@ -81,13 +81,10 @@ public class GeneratorJavaModel extends AbstractMojo {
         JDBCUtils.init(jdbc.getString("driver"), jdbc.getString("url"), jdbc.getString("username"), jdbc.getString("password"));
 
         if ((tables != null && table != null) || tables != null) {//一次多张表
-            //TODO 多线程
+            // 多线程
             JSONArray.toList(tables, new JSONObject(), new JsonConfig()).parallelStream().forEach(t -> {
                 generateModel(info, jdbc, javaModel, (JSONObject) t);
             });
-            /*for(int i = 0;i < tables.size(); i++) {
-                generateModel(info, jdbc, javaModel, tables.getJSONObject(i));
-            }*/
             getLog().info("model java files generated successfully :)");
 
         } else if (table != null) {//一次单张表
