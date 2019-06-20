@@ -11,6 +11,7 @@ import com.lucuicheng.plugin.utils.ResourcesUtils;
 import com.lucuicheng.plugin.utils.TemplateFileUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -79,14 +80,17 @@ public class GeneratorJavaModel extends AbstractMojo {
 
         JDBCUtils.init(jdbc.getString("driver"), jdbc.getString("url"), jdbc.getString("username"), jdbc.getString("password"));
 
-        if((tables != null && table != null) || tables != null) {//一次多张表
+        if ((tables != null && table != null) || tables != null) {//一次多张表
             //TODO 多线程
-            for(int i = 0;i < tables.size(); i++) {
+            JSONArray.toList(tables, new JSONObject(), new JsonConfig()).parallelStream().forEach(t -> {
+                generateModel(info, jdbc, javaModel, (JSONObject) t);
+            });
+            /*for(int i = 0;i < tables.size(); i++) {
                 generateModel(info, jdbc, javaModel, tables.getJSONObject(i));
-            }
+            }*/
             getLog().info("model java files generated successfully :)");
 
-        } else if(table != null) {//一次单张表
+        } else if (table != null) {//一次单张表
             generateModel(info, jdbc, javaModel, table);
             getLog().info("model java file generated successfully :)");
 
@@ -97,6 +101,7 @@ public class GeneratorJavaModel extends AbstractMojo {
 
     /**
      * generate java model(entity)
+     *
      * @param info
      * @param jdbc
      * @param javaModel
@@ -109,11 +114,11 @@ public class GeneratorJavaModel extends AbstractMojo {
         Field key = null;
 
         Map<String, Object> result = JDBCUtils.getTableInfoFrom(table.getString("name"), jdbc.getString("type"));
-        if(result.containsKey("fields")) {
-            fields = (List<Field>)result.get("fields");
+        if (result.containsKey("fields")) {
+            fields = (List<Field>) result.get("fields");
         }
-        if(result.containsKey("key")) {
-            key = (Field)result.get("key");
+        if (result.containsKey("key")) {
+            key = (Field) result.get("key");
         }
 
         Boolean hasDTO = Boolean.parseBoolean(javaModel.getString("dto"));
@@ -138,7 +143,7 @@ public class GeneratorJavaModel extends AbstractMojo {
         //model.put("fileName", table.getString("object") + "Example");
         //TemplateFileUtils.generateFrom("modelExample.ftl", model, sourceDir, this.getClass(), getLog());
 
-        if(hasDTO) {
+        if (hasDTO) {
             String modelPackageName = javaModel.getString("package");//实体类报名
 
             model.put("className", table.getString("object") + "DTO");
