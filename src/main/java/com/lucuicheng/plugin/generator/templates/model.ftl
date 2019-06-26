@@ -16,13 +16,22 @@ public class ${className}{
     <#if a.key?? && a.key == "PRI">
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private ${a.javaType} ${a.field};
+    private Long ${a.field};
     <#else>
     private ${a.javaType} ${a.field};//${a.comment}
     </#if>
     </#list>
 
     <#list fields as a>
+    <#if a.key?? && a.key == "PRI">
+    public void set${a.field?cap_first}(Long ${a.field}){
+    this.${a.field} = ${a.field};
+    }
+
+    public Long get${a.field?cap_first}(){
+    return this.${a.field};
+    }
+    <#else>
     public void set${a.field?cap_first}(${a.javaType} ${a.field}){
         this.${a.field} = ${a.field};
     }
@@ -30,6 +39,7 @@ public class ${className}{
     public ${a.javaType} get${a.field?cap_first}(){
         return this.${a.field};
     }
+    </#if>
     </#list>
 
 }
