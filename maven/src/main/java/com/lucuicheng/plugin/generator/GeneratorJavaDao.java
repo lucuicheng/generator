@@ -8,7 +8,6 @@ package com.lucuicheng.plugin.generator;
 import com.lucuicheng.plugin.exception.TableException;
 import com.lucuicheng.plugin.utils.ResourcesUtils;
 import com.lucuicheng.plugin.utils.TemplateFileUtils;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.maven.model.Resource;

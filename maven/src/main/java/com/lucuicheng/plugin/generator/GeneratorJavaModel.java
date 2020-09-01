@@ -8,6 +8,7 @@ import com.lucuicheng.plugin.exception.TableException;
 import com.lucuicheng.plugin.model.Field;
 import com.lucuicheng.plugin.utils.JDBCUtils;
 import com.lucuicheng.plugin.utils.ResourcesUtils;
+import com.lucuicheng.plugin.utils.StringUtils;
 import com.lucuicheng.plugin.utils.TemplateFileUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -123,8 +124,16 @@ public class GeneratorJavaModel extends AbstractMojo {
         //生成表对应的java模型
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("packageName", javaModel.getString("package"));
-        model.put("className", table.getString("object"));
-        model.put("fileName", table.getString("object"));
+
+        String objectStr = "";
+        String str = "";
+        if (table.getString("object") != null && "".equals(table.getString("object"))) {
+            str = StringUtils.upcaseUnderlineNext(table.getString("name"));
+            objectStr = str.substring(0, 1).toUpperCase() + str.substring(1, str.length());
+        }
+
+        model.put("className", objectStr);
+        model.put("fileName", objectStr);
 
         model.put("tableName", table.getString("name"));
         model.put("fields", fields);
