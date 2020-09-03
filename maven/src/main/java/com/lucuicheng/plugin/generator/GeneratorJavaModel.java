@@ -106,65 +106,70 @@ public class GeneratorJavaModel extends AbstractMojo {
      * @param table
      */
     private void generateModel(JSONObject info, JSONObject jdbc, JSONObject javaModel, JSONObject table) {
+        try {
 
-        //获取要创建的全局变量信息
-        List<Field> fields = null;
-        Field key = null;
+            //获取要创建的全局变量信息
+            List<Field> fields = null;
+            Field key = null;
 
-        Map<String, Object> result = JDBCUtils.getTableInfoFrom(table.getString("name"), jdbc.getString("type"));
-        if (result.containsKey("fields")) {
-            fields = (List<Field>) result.get("fields");
+            Map<String, Object> result = JDBCUtils.getTableInfoFrom(table.getString("name"), jdbc.getString("type"));
+            if (result.containsKey("fields")) {
+                fields = (List<Field>) result.get("fields");
+            }
+            if (result.containsKey("key")) {
+                key = (Field) result.get("key");
+            }
+
+            Boolean hasDTO = Boolean.parseBoolean(javaModel.getString("dto"));
+
+            //生成表对应的java模型
+            Map<String, Object> model = new HashMap<String, Object>();
+            model.put("packageName", javaModel.getString("package"));
+
+            String objectStr = "";
+            String str = "";
+            if (table.getString("object") != null && "".equals(table.getString("object"))) {
+                str = StringUtils.upcaseUnderlineNext(table.getString("name"));
+                objectStr = str.substring(0, 1).toUpperCase() + str.substring(1, str.length());
+            }
+
+            model.put("className", objectStr);
+            model.put("fileName", objectStr);
+
+            model.put("tableName", table.getString("name"));
+            model.put("fields", fields);
+            model.put("key", key);
+
+            model.put("author", info.getString("author"));
+            model.put("fileType", "java");
+
+            //从模板输出到文件
+            TemplateFileUtils.generateFrom("model.ftl", model, sourceDir, this.getClass(), getLog());
+
+            //model.put("className", table.getString("object") + "Example");
+            //model.put("fileName", table.getString("object") + "Example");
+            //TemplateFileUtils.generateFrom("modelExample.ftl", model, sourceDir, this.getClass(), getLog());
+
+            if (hasDTO) {
+                String modelPackageName = javaModel.getString("package");//实体类报名
+
+                model.put("className", table.getString("object") + "DTO");
+                model.put("fileName", table.getString("object") + "DTO");
+
+                model.put("model", modelPackageName + "." + table.getString("object"));//实体类
+                model.put("modelName", table.getString("object"));//实体类名称
+
+                model.put("packageName", modelPackageName.replaceAll(".model", ".dto"));//实体类
+                model.put("dtoName", table.getString("object") + "DTO");//实体类名称
+
+                TemplateFileUtils.generateFrom("dto.ftl", model, sourceDir, this.getClass(), getLog());
+            }
+
+
+            getLog().info(table.getString("object") + " model(entity) generated!");
+
+        } catch (Exception e) {
+            getLog().info(e.fillInStackTrace());
         }
-        if (result.containsKey("key")) {
-            key = (Field) result.get("key");
-        }
-
-        Boolean hasDTO = Boolean.parseBoolean(javaModel.getString("dto"));
-
-        //生成表对应的java模型
-        Map<String, Object> model = new HashMap<String, Object>();
-        model.put("packageName", javaModel.getString("package"));
-
-        String objectStr = "";
-        String str = "";
-        if (table.getString("object") != null && "".equals(table.getString("object"))) {
-            str = StringUtils.upcaseUnderlineNext(table.getString("name"));
-            objectStr = str.substring(0, 1).toUpperCase() + str.substring(1, str.length());
-        }
-
-        model.put("className", objectStr);
-        model.put("fileName", objectStr);
-
-        model.put("tableName", table.getString("name"));
-        model.put("fields", fields);
-        model.put("key", key);
-
-        model.put("author", info.getString("author"));
-        model.put("fileType", "java");
-
-        //从模板输出到文件
-        TemplateFileUtils.generateFrom("model.ftl", model, sourceDir, this.getClass(), getLog());
-
-        //model.put("className", table.getString("object") + "Example");
-        //model.put("fileName", table.getString("object") + "Example");
-        //TemplateFileUtils.generateFrom("modelExample.ftl", model, sourceDir, this.getClass(), getLog());
-
-        if (hasDTO) {
-            String modelPackageName = javaModel.getString("package");//实体类报名
-
-            model.put("className", table.getString("object") + "DTO");
-            model.put("fileName", table.getString("object") + "DTO");
-
-            model.put("model", modelPackageName + "." + table.getString("object"));//实体类
-            model.put("modelName", table.getString("object"));//实体类名称
-
-            model.put("packageName", modelPackageName.replaceAll(".model", ".dto"));//实体类
-            model.put("dtoName", table.getString("object") + "DTO");//实体类名称
-
-            TemplateFileUtils.generateFrom("dto.ftl", model, sourceDir, this.getClass(), getLog());
-        }
-
-
-        getLog().info(table.getString("object") + " model(entity) generated!");
     }
 }

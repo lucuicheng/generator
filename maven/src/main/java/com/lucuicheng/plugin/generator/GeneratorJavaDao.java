@@ -7,6 +7,7 @@ package com.lucuicheng.plugin.generator;
 
 import com.lucuicheng.plugin.exception.TableException;
 import com.lucuicheng.plugin.utils.ResourcesUtils;
+import com.lucuicheng.plugin.utils.StringUtils;
 import com.lucuicheng.plugin.utils.TemplateFileUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -21,6 +22,7 @@ import java.util.Map;
 
 /**
  * Goal which touches a timestamp file.
+ *
  * @goal dao
  * @execute goal = "model"
  * @phase process-sources
@@ -74,14 +76,14 @@ public class GeneratorJavaDao extends AbstractMojo {
         JSONObject javaModel = ResourcesUtils.getJavaModel(config);
         JSONObject javaClient = ResourcesUtils.getJavaClient(config);
 
-        if((tables != null && table != null) || tables != null) {//一次多张表
+        if ((tables != null && table != null) || tables != null) {//一次多张表
             //TODO 多线程
-            for(int i = 0;i < tables.size(); i++) {
+            for (int i = 0; i < tables.size(); i++) {
                 generateDao(info, javaModel, javaClient, tables.getJSONObject(i));
             }
             getLog().info("mapper dao files generated successfully :)");
 
-        } else if(table != null) {//一次单张表
+        } else if (table != null) {//一次单张表
             generateDao(info, javaModel, javaClient, table);
             getLog().info("mapper dao file generated successfully :)");
 
@@ -93,6 +95,7 @@ public class GeneratorJavaDao extends AbstractMojo {
 
     /**
      * generate java mapper(dao)
+     *
      * @param info
      * @param javaModel
      * @param javaClient
@@ -100,7 +103,8 @@ public class GeneratorJavaDao extends AbstractMojo {
      */
     private void generateDao(JSONObject info, JSONObject javaModel, JSONObject javaClient, JSONObject table) {
 
-        //获取要创建的全局变量信息
+        try {
+            //获取要创建的全局变量信息
         /*List<Attr> list = null;
         if("mysql".equalsIgnoreCase(jdbc.getString("type"))) {//获取不同数据库的表字段内容
             list = JDBCUtils.getMySqlFieldsFrom(table.getString("name"));
@@ -108,38 +112,49 @@ public class GeneratorJavaDao extends AbstractMojo {
             //TODO
         }*/
 
-        //生成表对应的java dao 层
-        String modelPackageName = javaModel.getString("package");//实体类报名
-        Boolean hasCustom = Boolean.parseBoolean(table.getString("custom"));
+            //生成表对应的java dao 层
+            String modelPackageName = javaModel.getString("package");//实体类报名
+            Boolean hasCustom = Boolean.parseBoolean(table.getString("custom"));
 
-        Map<String, Object> model = new HashMap<String, Object>();
-        model.put("packageName", javaClient.getString("package"));
-        model.put("className", table.getString("object") + "Mapper");
-        model.put("fileName", table.getString("object") + "Mapper");
+            String objectStr = "";
+            String str = "";
+            if (table.getString("object") != null && "".equals(table.getString("object"))) {
+                str = StringUtils.upcaseUnderlineNext(table.getString("name"));
+                objectStr = str.substring(0, 1).toUpperCase() + str.substring(1, str.length());
+            }
 
-        model.put("tableName", table.getString("name"));
+            Map<String, Object> model = new HashMap<String, Object>();
+            model.put("packageName", javaClient.getString("package"));
+            model.put("className", objectStr + "Mapper");
+            model.put("fileName", objectStr + "Mapper");
 
-        model.put("model", modelPackageName + "." + table.getString("object"));//实体类
-        model.put("modelExample", modelPackageName + "." + table.getString("object") + "Example");//实体类
-        model.put("modelName", table.getString("object"));//实体类名称
-        model.put("modelExampleName", table.getString("object")  + "Example");//实体类名称
+            model.put("tableName", table.getString("name"));
 
-        model.put("author", info.getString("author"));
-        model.put("fileType", "java");
+            model.put("model", modelPackageName + "." + objectStr);//实体类
+            model.put("modelExample", modelPackageName + "." + objectStr + "Example");//实体类
+            model.put("modelName", objectStr);//实体类名称
+            model.put("modelExampleName", objectStr + "Example");//实体类名称
 
-        //从模板输出到文件
-        TemplateFileUtils.generateFrom("dao.ftl", model, sourceDir, this.getClass(), getLog());
-        if(hasCustom) {
-            model.put("packageName", javaClient.getString("package") + ".custom");
-            model.put("className", table.getString("object") + "CustomMapper");
-            model.put("fileName", table.getString("object") + "CustomMapper");
+            model.put("author", info.getString("author"));
+            model.put("fileType", "java");
 
-            model.put("dto", modelPackageName.replaceAll(".model", ".dto") + "." + table.getString("object") + "DTO");//实体类
-            model.put("dtoName", table.getString("object") + "DTO");//实体类
+            //从模板输出到文件
+            TemplateFileUtils.generateFrom("dao.ftl", model, sourceDir, this.getClass(), getLog());
+            if (hasCustom) {
+                model.put("packageName", javaClient.getString("package") + ".custom");
+                model.put("className", objectStr + "CustomMapper");
+                model.put("fileName", objectStr + "CustomMapper");
 
-            TemplateFileUtils.generateFrom("customDao.ftl", model, sourceDir, this.getClass(), getLog());
+                model.put("dto", modelPackageName.replaceAll(".model", ".dto") + "." + objectStr + "DTO");//实体类
+                model.put("dtoName", objectStr + "DTO");//实体类
+
+                TemplateFileUtils.generateFrom("customDao.ftl", model, sourceDir, this.getClass(), getLog());
+            }
+
+            getLog().info(objectStr + " mapper(dao) generated!");
+        } catch (Exception e) {
+
+//            getLog().info(e.fillInStackTrace());
         }
-
-        getLog().info(table.getString("object") + " mapper(dao) generated!");
     }
 }

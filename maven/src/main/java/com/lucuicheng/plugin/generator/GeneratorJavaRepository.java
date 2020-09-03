@@ -7,6 +7,7 @@ package com.lucuicheng.plugin.generator;
 
 import com.lucuicheng.plugin.exception.TableException;
 import com.lucuicheng.plugin.utils.ResourcesUtils;
+import com.lucuicheng.plugin.utils.StringUtils;
 import com.lucuicheng.plugin.utils.TemplateFileUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -99,20 +100,32 @@ public class GeneratorJavaRepository extends AbstractMojo {
      * @param table
      */
     private void generateDao(JSONObject info, JSONObject model, JSONObject table) {
-        //生成表对应的java dao 层
-        Map<String, Object> templModel = new HashMap<String, Object>();
-        templModel.put("fileName", table.getString("object") + "Repository");
+        try {
 
-        templModel.put("modelPackageName", model.getString("package"));//实体类
-        templModel.put("packageName", model.getString("repository"));//实体类
-        templModel.put("modelName", table.getString("object"));//实体类名称
+            String objectStr = "";
+            String str = "";
+            if (table.getString("object") != null && "".equals(table.getString("object"))) {
+                str = StringUtils.upcaseUnderlineNext(table.getString("name"));
+                objectStr = str.substring(0, 1).toUpperCase() + str.substring(1, str.length());
+            }
 
-        templModel.put("author", info.getString("author"));
-        templModel.put("fileType", "java");
+            //生成表对应的java dao 层
+            Map<String, Object> templModel = new HashMap<String, Object>();
+            templModel.put("fileName", objectStr + "Repository");
 
-        //从模板输出到文件
-        TemplateFileUtils.generateFrom("repository.ftl", templModel, sourceDir, this.getClass(), getLog());
+            templModel.put("modelPackageName", model.getString("package"));//实体类
+            templModel.put("packageName", model.getString("repository"));//实体类
+            templModel.put("modelName", objectStr);//实体类名称
 
-        getLog().info(table.getString("object") + " (repository) generated!");
+            templModel.put("author", info.getString("author"));
+            templModel.put("fileType", "java");
+
+            //从模板输出到文件
+            TemplateFileUtils.generateFrom("repository.ftl", templModel, sourceDir, this.getClass(), getLog());
+
+            getLog().info(objectStr + " (repository) generated!");
+        } catch (Exception e) {
+
+        }
     }
 }
