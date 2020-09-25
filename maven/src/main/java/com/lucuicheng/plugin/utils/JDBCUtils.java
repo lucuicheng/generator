@@ -3,6 +3,7 @@ package com.lucuicheng.plugin.utils;
 import com.lucuicheng.plugin.model.Field;
 import com.lucuicheng.plugin.model.JavaType;
 import com.lucuicheng.plugin.model.JdbcType;
+import com.lucuicheng.plugin.model.SqlAlchemyType;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.impl.LogFactoryImpl;
 
@@ -109,13 +110,13 @@ public class JDBCUtils {
         PreparedStatement pstmt = null;
 
         String sql = "";
-        if("mysql".trim().equalsIgnoreCase(databaseType)) {
+        if ("mysql".trim().equalsIgnoreCase(databaseType)) {
             sql = "SHOW FULL FIELDS FROM " + tableName;
 
-        } else if("oracle".trim().equalsIgnoreCase(databaseType)) {
+        } else if ("oracle".trim().equalsIgnoreCase(databaseType)) {
             sql = "SHOW FULL FIELDS FROM " + tableName;
 
-        } else if("sqlserve".trim().equalsIgnoreCase(databaseType)) {
+        } else if ("sqlserve".trim().equalsIgnoreCase(databaseType)) {
             sql = "SHOW FULL FIELDS FROM " + tableName;
 
         }
@@ -131,29 +132,32 @@ public class JDBCUtils {
             while (rs.next()) {
                 String column = rs.getString("Field");
                 String filed = StringUtils.upcaseUnderlineNext(rs.getString("Field"));
-                if(!"tableType".equalsIgnoreCase(filed)  && !"rowFormat".equalsIgnoreCase(filed) && !"columnKey".equalsIgnoreCase(filed)) {
+                if (!"tableType".equalsIgnoreCase(filed) && !"rowFormat".equalsIgnoreCase(filed) && !"columnKey".equalsIgnoreCase(filed)) {
                     String javaType = JavaType.getIntance().toJavaType(rs.getString("Type"));
                     String jdbcType = JdbcType.getIntance().toJdbcType(rs.getString("Type"));
+                    String sqlAlchemyType = SqlAlchemyType.getInstance().toSqlAlchemyType(rs.getString("Type"));
+
                     String key = rs.getString("Key");
+
                     String comment = rs.getString("Comment");
 
-                    if(org.apache.commons.lang.StringUtils.isNotBlank(key) && "PRI".equals(key)) {
-                        result.put("key", new Field(column, filed, javaType, jdbcType, key, comment));
+                    if (org.apache.commons.lang.StringUtils.isNotBlank(key) && "PRI".equals(key)) {
+                        result.put("key", new Field(column, filed, javaType, jdbcType, sqlAlchemyType, key, comment));
                     }
 
-                    if("tableSchema".equalsIgnoreCase(filed) && "TABLES".equals(tableName)) {
-                        result.put("key", new Field(column, filed, javaType, jdbcType, key, comment));
+                    if ("tableSchema".equalsIgnoreCase(filed) && "TABLES".equals(tableName)) {
+                        result.put("key", new Field(column, filed, javaType, jdbcType, sqlAlchemyType, key, comment));
                     }
 
-                    if("tableName".equalsIgnoreCase(filed) && "COLUMNS".equals(tableName)) {
-                        result.put("key", new Field(column, filed, javaType, jdbcType, key, comment));
+                    if ("tableName".equalsIgnoreCase(filed) && "COLUMNS".equals(tableName)) {
+                        result.put("key", new Field(column, filed, javaType, jdbcType, sqlAlchemyType, key, comment));
                     }
 
-                    if("tableName".equalsIgnoreCase(filed) && "STATISTICS".equals(tableName)) {
-                        result.put("key", new Field(column, filed, javaType, jdbcType, key, comment));
+                    if ("tableName".equalsIgnoreCase(filed) && "STATISTICS".equals(tableName)) {
+                        result.put("key", new Field(column, filed, javaType, jdbcType, sqlAlchemyType, key, comment));
                     }
 
-                    list.add(new Field(column, filed, javaType, jdbcType, key, comment));
+                    list.add(new Field(column, filed, javaType, jdbcType, sqlAlchemyType, key, comment));
                 }
 
             }

@@ -1,3 +1,4 @@
+import com.lucuicheng.plugin.model.SqlAlchemyType;
 import com.lucuicheng.plugin.utils.StringUtils;
 import org.junit.Test;
 
@@ -8,8 +9,10 @@ public class TestData {
 
     @Test
     public void test() {
-        String result = StringUtils.upcaseUnderlineNext("service_config_zookeeper");
-        System.out.println(result.substring(0,1).toUpperCase()+result.substring(1,result.length()));
-        System.out.println(result);
+//        String result = StringUtils.upcaseUnderlineNext("service_config_zookeeper");
+//        System.out.println(result.substring(0,1).toUpperCase()+result.substring(1,result.length()));
+//        System.out.println(result);
+
+        System.out.println(SqlAlchemyType.getInstance().toSqlAlchemyType("int(7)"));
     }
 }

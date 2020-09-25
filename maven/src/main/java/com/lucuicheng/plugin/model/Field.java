@@ -8,14 +8,16 @@ public class Field {
     private String field;
     private String javaType;
     private String jdbcType;
+    private String sqlAlchemyType;
     private String key;
     private String comment;
 
-    public Field(String column, String field, String javaType, String jdbcType, String key, String comment) {
+    public Field(String column, String field, String javaType, String jdbcType, String sqlAlchemyType, String key, String comment) {
         this.column = column;
         this.field = field;
         this.javaType = javaType;
         this.jdbcType = jdbcType;
+        this.sqlAlchemyType = sqlAlchemyType;
         this.key = key;
         this.comment = comment;
     }
@@ -66,5 +68,13 @@ public class Field {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getSqlAlchemyType() {
+        return sqlAlchemyType;
+    }
+
+    public void setSqlAlchemyType(String sqlAlchemyType) {
+        this.sqlAlchemyType = sqlAlchemyType;
     }
 }

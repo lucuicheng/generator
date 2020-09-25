@@ -145,6 +145,7 @@ public class GeneratorJavaModel extends AbstractMojo {
 
             //从模板输出到文件
             TemplateFileUtils.generateFrom("model.ftl", model, sourceDir, this.getClass(), getLog());
+            TemplateFileUtils.generateFrom("py_model.ftl", model, sourceDir, this.getClass(), getLog());
 
             //model.put("className", table.getString("object") + "Example");
             //model.put("fileName", table.getString("object") + "Example");
